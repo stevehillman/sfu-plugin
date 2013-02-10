@@ -1,0 +1,127 @@
+<%
+  div_sections = []
+%>
+
+<h1>Course Details</h1>
+  <% form_for(@course, :html => { :class => 'bootstrap-form form-horizontal' }) do |course_form| %>
+  <div class="control-group">
+    <%= course_form.label :enrollment_term_id, :en => "Term", :class => "control-label" %>
+    <div class="controls">
+      <%= course_form.select :enrollment_term_id, @terms.map { |t| [t.name,t.id]} %>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <%= course_form.label :sis_course_id, :en => "SIS Course ID", :class => "control-label" %>
+    <div class="controls">
+      <%= course_form.text_field :sis_course_id,
+                       :placeholder => t('new_course_sis_placeholder', '1131-engl-100'),
+                       :class => 'input-large',
+                       :maxlength => '100' %>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <%= course_form.label :name, :en => "Course Name", :class => "control-label" %>
+    <div class="controls">
+      <%= course_form.text_field :name,
+                       :placeholder => t('new_course_title_placeholder', 'ENGL100 - D100 Intro to English'),
+                       :class => 'input-xlarge',
+                       :maxlength => '100' %>
+    </div>
+  </div>
+
+  <div id="course_code_wrapper" class="control-group" style="display:block">
+    <%= course_form.label :course_code, :en => "Short Name", :class => "control-label" %>
+    <div class="controls">
+      <%= course_form.text_field :course_code,
+                       :placeholder => t('sample_course_code', 'ENGL100-D100'),
+                       :class => 'input-large',
+                       :maxlength => '100' %>
+      <div><%= t :course_cose_explanation, "This will be displayed in places with little space" %></div>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <%= course_form.label :start_at, :en => "Starts", :class => "control-label" %>
+    <div class="controls">
+     <span class="course_form">
+	<%= course_form.text_field :start_at, :class => "date_entry datetime_field", :value => "2013-01-06 24:00:00" %>
+        <img class="ui-datepicker-trigger" src="/images/datepicker.gif?1234" alt="..." title="...">
+     </span>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <%= course_form.label :conclude_at, :en => "Ends", :class => "control-label" %>
+    <div class="controls">
+	<%= course_form.text_field :conclude_at, :class => "date_entry datetime_field", :value => "2013-05-06 24:00:00" %>
+        <img class="ui-datepicker-trigger" src="/images/datepicker.gif?1234" alt="..." title="...">
+    </div>
+  </div>
+
+  <div class="control-group">
+    <div class="controls">
+      <label class="checkbox">
+        <%= course_form.check_box :restrict_enrollments_to_course_dates %>
+	Users can only participate in the course between these dates
+    	<div style="font-size: 0.8em; padding-left: 25px;">
+      	  <%= t('course_overrides_term', %{This will override any term availability settings.}) %>
+    	</div>
+      </label>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <div class="controls">
+      <label class="checkbox">
+        <%= course_form.check_box :is_public %>
+        Make course publicly visible
+        <div>(student data will remain private)</div>
+      </label>
+    </div>
+  </div>
+
+  <input type="hidden" name="enroll_me" value="false">
+
+  <div class="control-group">
+    <%= course_form.label :license,
+                :en => "Content License",
+                :class => "control-label" %>
+    <div class="controls">
+      <%= course_form.select :license, Course.licenses.map { |id, attrs| [attrs[:readable_license], id] } , {}, :class => 'input-xlarge' %>
+    </div>
+  </div>
+
+<hr>
+<h1>Section Info</h1>
+    <% course_form.fields_for :course_sections do |section_form| %>
+       <% div_sections << section_form.id %>
+       <%= render :partial => 'course_section', :locals => { :f => section_form } %>
+    <% end %>
+  <div class="control-group">
+    <div class="controls">
+      <a href="#" onclick="addSection()" class="btn dialog_closer">Add Section</a>
+      <input type="hidden" id="number_section_shown" value="1">
+    </div>
+  </div>
+<hr>
+  <div class="button-container">
+    <%= course_form.submit "Create Course", :class=> "btn btn-primary" %>
+  </div>
+<% end %>
+
+<script>
+  var div_array = [ <%= div_sections.join(", ") %> ];
+
+  for (var i = 0; i < div_array.length; i++) {
+	if (i > 0) document.getElementById("course_section_" + div_array[i]).style.display = "none";
+  }
+
+  function addSection() {
+	var visible_sections = document.getElementById("number_section_shown").value;
+	var i = Number(visible_sections) + 1;
+       	document.getElementById("course_section_" + div_array[i-1]).style.display = "block";
+	document.getElementById("number_section_shown").value = i;	
+  }
+</script>
