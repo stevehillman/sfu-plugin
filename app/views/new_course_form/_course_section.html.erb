@@ -5,9 +5,11 @@
       <%= f.text_field :name,
                        :placeholder => t('section_name_placeholder', 'D100'),
                        :class => 'input-large',
+		       :onkeyup => 'update_section_sis_id(this.id)',
+		       :required => true,
                        :maxlength => '50' %>
       <%= f.text_field :sis_source_id,
-                       :placeholder => t('section_sis_number_placeholder', '1131-engl-100-d100'),
+		       :readonly => true,
                        :class => 'input-large',
                        :maxlength => '50' %>
     </div>
