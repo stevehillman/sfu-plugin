@@ -24,9 +24,9 @@ class NewCourseFormController < ApplicationController
 
   def student_only? (sfuid)
     if get_user_roles_from_amaint(sfuid).equal? "undergrad"
-      return false
+      return true
     end
-    return true
+    return false
   end
 
 end
