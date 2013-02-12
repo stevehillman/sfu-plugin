@@ -4,8 +4,8 @@ require "json"
 class NewCourseFormController < ApplicationController
   unloadable
 
-  def new 
-    @user = AccountUser.find(@current_user.id).user
+  def new
+    @user = User.find(@current_user.id)
     @sfuid = @user.pseudonym.unique_id
     if !student_only? @sfuid
       @course = Course.new
