@@ -1,7 +1,9 @@
-<%= @info %>
-Hi 
+Hi
 <%= @user.short_name %>,
-
 <div class="new_course_container">
-<%= render :partial => 'form' %>
+  <% if !@controller.student_only? @sfuid %>
+      <%= render :partial => 'form' %>
+  <% else  %>
+      <%= render :partial => 'error' %>
+  <% end %>
 </div>
