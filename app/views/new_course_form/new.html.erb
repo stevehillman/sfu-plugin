@@ -1,9 +1,9 @@
 Hi
 <%= @user.short_name %>,
 <div class="new_course_container">
-  <% if !@controller.student_only? @sfuid %>
-      <%= render :partial => 'form' %>
-  <% else  %>
+  <% if @controller.student_only? @sfuid %>
       <%= render :partial => 'error' %>
+  <% else  %>
+      <%= render :partial => 'form' %>
   <% end %>
 </div>

@@ -23,7 +23,7 @@ class NewCourseFormController < ApplicationController
   end
 
   def student_only? (sfuid)
-    if get_user_roles_from_amaint(sfuid).equal? "undergrad"
+    if get_user_roles_from_amaint(sfuid).join("").eql? "undergrad"
       return true
     end
     return false
