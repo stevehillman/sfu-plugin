@@ -7,7 +7,8 @@ module SFU #:nodoc:
       end 
 
       def new_course_form
-	@set.add_route("/api/vi/sfu/new_course_form", {:controller => "new_course_form", :action => "new"})
+	      @set.add_route("/course_form", {:controller => "new_course_form", :action => "new"})
+        @set.add_route("/course_form/create", {:controller => "new_course_form", :action => "create"})
       end
 
     end

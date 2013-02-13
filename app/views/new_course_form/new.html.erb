@@ -1,7 +1,12 @@
-<%= @info %>
-Hi 
-<%= @user.short_name %>,
-
 <div class="new_course_container">
-<%= render :partial => 'form' %>
+  <% unless @controller.student_only? @sfuid %>
+      <%= render :partial => 'form' %>
+  <% else  %>
+      <%= render :partial => 'error' %>
+  <% end %>
 </div>
+<br>DEBUG INFO:<br>
+Hi <%= @user.short_name %><br>
+roles for '<%= @sfuid %>': '<%= @controller.get_user_roles_from_amaint @sfuid %>' <br>
+student_only? <%= @controller.student_only? @sfuid %> <br>
+

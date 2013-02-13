@@ -3,176 +3,28 @@
 %>
 
 <h1>Course Details</h1>
-  <% form_for(@course, :html => { :class => 'bootstrap-form form-horizontal' }) do |course_form| %>
+  <% form_tag({:controller => "new_course_form" ,:action => "create"}, :class => "bootstrap-form form-horizontal") do -%>
   <div class="control-group">
-    <%= course_form.label :enrollment_term_id, :en => "Term", :class => "control-label" %>
+    <%= label_tag "Courses For", "Courses For", :class => "control-label" %>
     <div class="controls">
-      <%= course_form.select :enrollment_term_id, @terms.map { |t| [t.name,t.id]}, :id => "enrollment_term_id" %>
+      <%= text_field_tag "course_for", nil, :class => "input-large", :value => @sfuid, :onkeyup => "update_course_params();", :required => true %>
     </div>
   </div>
 
-  <div class="control-group">
-    <%= label_tag "Course Subject", "Course Subject", :class => "control-label" %>
-    <div class="controls">
-      <%= text_field_tag "course_subject", nil, :class => "input-large", :placeholder => t('course_subject_placeholder', 'MATH'), :onkeyup => "update_course_params();", :required => true %>
+   <div class="control-group">
+     <%= label_tag "Courses you are teaching", "Course List", :class => "control-label" %>
+      <div class="controls">
+        <%
+           @course_list.each do |course_info|
+            course_data = course_info.split(":::")
+        %>
+           <%=  check_box_tag "course", course_data[0]  %> <%= course_data[1] %><br>
+        <% end %>
+      </div>
     </div>
-  </div>
 
-  <div class="control-group">
-    <%= label_tag "Course Number", "Course Number", :class => "control-label" %>
-    <div class="controls">
-      <%= text_field_tag "course_number", nil, :class => "input-large", :placeholder => t('course_number_placeholder', '100'), :onkeyup => "update_course_params();", :required => true %>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= label_tag "Course Title", "Course Title", :class => "control-label" %>
-    <div class="controls">
-      <%= text_field_tag "course_title", nil, :class => "input-large", :placeholder => t('course_title_placeholder', 'Intro to Math'), :onkeyup => "update_course_params();", :required => true %>
-    </div>
-  </div>
-
-  <div class="control-group">--------------------------------------------------------------------------------</div>
-
-  <div class="control-group">
-    <%= course_form.label :name, :en => "Course Name", :class => "control-label" %>
-    <div class="controls">
-      <%= course_form.text_field :name,
-		       :readonly => true,
-                       :class => 'input-large',
-		       :onkeyup => 'update_sis_course_id()',
-                       :maxlength => '100' %>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= course_form.label :sis_course_id, :en => "SIS Course ID", :class => "control-label" %>
-    <div class="controls">
-      <%= course_form.text_field :sis_course_id,
-                       :id => 'sis_course_id',
-                       :class => 'input-large',
-                       :readonly => true,
-                       :maxlength => '100' %>
-    </div>
-  </div>
-
-  <div id="course_code_wrapper" class="control-group" style="display:block">
-    <%= course_form.label :course_code, :en => "Short Name", :class => "control-label" %>
-    <div class="controls">
-      <%= course_form.text_field :course_code,
-		       :readonly => true,
-                       :class => 'input-large',
-                       :maxlength => '100' %>
-      <div><%= t :course_cose_explanation, "This will be displayed in places with little space" %></div>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= course_form.label :start_at, :en => "Starts", :class => "control-label" %>
-    <div class="controls">
-     <span class="course_form">
-	<%= course_form.text_field :start_at, :class => "date_entry datetime_field", :value => "2013-01-06 24:00:00" %>
-        <img class="ui-datepicker-trigger" src="/images/datepicker.gif?1234" alt="..." title="...">
-     </span>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= course_form.label :conclude_at, :en => "Ends", :class => "control-label" %>
-    <div class="controls">
-	<%= course_form.text_field :conclude_at, :class => "date_entry datetime_field", :value => "2013-05-06 24:00:00" %>
-        <img class="ui-datepicker-trigger" src="/images/datepicker.gif?1234" alt="..." title="...">
-    </div>
-  </div>
-
-  <div class="control-group">
-    <div class="controls">
-      <label class="checkbox">
-        <%= course_form.check_box :restrict_enrollments_to_course_dates %>
-	Users can only participate in the course between these dates
-    	<div style="font-size: 0.8em; padding-left: 25px;">
-      	  <%= t('course_overrides_term', %{This will override any term availability settings.}) %>
-    	</div>
-      </label>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <div class="controls">
-      <label class="checkbox">
-        <%= course_form.check_box :is_public %>
-        Make course publicly visible
-        <div>(student data will remain private)</div>
-      </label>
-    </div>
-  </div>
-
-  <input type="hidden" name="enroll_me" value="true">
-
-  <div class="control-group">
-    <%= course_form.label :license,
-                :en => "Content License",
-                :class => "control-label" %>
-    <div class="controls">
-      <%= course_form.select :license, Course.licenses.map { |id, attrs| [attrs[:readable_license], id] } , {}, :class => 'input-xlarge' %>
-    </div>
-  </div>
-
-<hr>
-<h1>Section Info</h1>
-    <% course_form.fields_for :course_sections do |section_form| %>
-       <% div_sections << section_form.id %>
-       <%= render :partial => 'course_section', :locals => { :f => section_form } %>
-    <% end %>
-  <div class="control-group">
-    <div class="controls">
-      <a href="#" onclick="addSection()" class="btn dialog_closer">Add Section</a>
-      <input type="hidden" id="number_section_shown" value="1">
-    </div>
-  </div>
 <hr>
   <div class="button-container">
-    <%= course_form.submit "Create Course", :class=> "btn btn-primary" %>
+    <%= submit_tag "Create Course", :class=> "btn btn-primary" %>
   </div>
 <% end %>
-
-<script>
-  var div_array = [ <%= div_sections.join(", ") %> ];
-
-  for (var i = 0; i < div_array.length; i++) {
-	if (i > 0) document.getElementById("course_section_" + div_array[i]).style.display = "none";
-  }
-
-  function addSection() {
-	var visible_sections = document.getElementById("number_section_shown").value;
-	var i = Number(visible_sections) + 1;
-       	document.getElementById("course_section_" + div_array[i-1]).style.display = "block";
-	document.getElementById("number_section_shown").value = i;	
-  }
-
-  function get_term_sis_id(term_id) {
-	var terms = {};
-        <% @terms.map do |t| %>
-	terms['<%= t.id %>'] = <%= t.sis_source_id %>;	
-	<% end %> 
-	return terms[term_id];
-  }
-
-  function update_course_params(){
-	var selected_term = get_term_sis_id(document.getElementById("course_enrollment_term_id").value);
-        var course_subject = document.getElementById("course_subject").value;
-        var course_number = document.getElementById("course_number").value;
-        var course_title = document.getElementById("course_title").value;
-
-	document.getElementById("course_name").value = course_subject.toUpperCase() + course_number + " - " + course_title;
-	document.getElementById("sis_course_id").value = selected_term + "-" + course_subject.toLowerCase() + "-" + course_number;
-	document.getElementById("course_course_code").value = course_subject.toUpperCase() + course_number;
-  }  
-
-  function update_section_sis_id(textfield_name_id) {
-        var course_sis_id = document.getElementById("sis_course_id").value;
-        var section_name = document.getElementById(textfield_name_id).value;
-	var textfield_sis_id = textfield_name_id.replace("_name", "_sis_source_id");
-	document.getElementById(textfield_sis_id).value = course_sis_id + "-" + section_name.toLowerCase();
-  }
-</script>
