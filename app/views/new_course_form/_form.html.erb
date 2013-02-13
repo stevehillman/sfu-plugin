@@ -1,8 +1,4 @@
-<%
-  div_sections = []
-%>
-
-<h1>Course Details</h1>
+<h1>Course Request Form</h1>
   <% form_tag({:controller => "new_course_form" ,:action => "create"}, :class => "bootstrap-form form-horizontal") do -%>
   <div class="control-group">
     <%= label_tag "Courses For", "Courses For", :class => "control-label" %>
@@ -21,79 +17,7 @@
            <%=  check_box_tag "course", course_data[0]  %> <%= course_data[1] %><br>
         <% end %>
       </div>
-    </div>
-      <%= course_form.select :enrollment_term_id, @terms.map { |t| [t.name,t.id]}, :id => "enrollment_term_id" %>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= label_tag "Course Subject", "Course Subject", :class => "control-label" %>
-    <div class="controls">
-      <%= text_field_tag "course_subject", nil, :class => "input-large", :placeholder => t('course_subject_placeholder', 'MATH'), :onkeyup => "update_course_params();", :required => true %>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= label_tag "Course Number", "Course Number", :class => "control-label" %>
-    <div class="controls">
-      <%= text_field_tag "course_number", nil, :class => "input-large", :placeholder => t('course_number_placeholder', '100'), :onkeyup => "update_course_params();", :required => true %>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= label_tag "Course Title", "Course Title", :class => "control-label" %>
-    <div class="controls">
-      <%= text_field_tag "course_title", nil, :class => "input-large", :placeholder => t('course_title_placeholder', 'Intro to Math'), :onkeyup => "update_course_params();", :required => true %>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= course_form.label :license,
-                :en => "Content License",
-                :class => "control-label" %>
-    <div class="controls">
-      <%= course_form.select :license, Course.licenses.map { |id, attrs| [attrs[:readable_license], id] } , {}, :class => 'input-xlarge' %>
-    </div>
-  </div>
-
-  <div class="control-group">--------------------------------- Below would be hidden fields in production -----------------------------------------------</div>
-
-  <div class="control-group">
-    <%= course_form.label :name, :en => "Course Name", :class => "control-label" %>
-    <div class="controls">
-      <%= course_form.text_field :name,
-		       :readonly => true,
-                       :class => 'input-large',
-		       :onkeyup => 'update_sis_course_id()',
-                       :maxlength => '100' %>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <%= course_form.label :sis_course_id, :en => "SIS Course ID", :class => "control-label" %>
-    <div class="controls">
-      <%= course_form.text_field :sis_course_id,
-                       :id => 'sis_course_id',
-                       :class => 'input-large',
-                       :readonly => true,
-                       :maxlength => '100' %>
-    </div>
-  </div>
-
-  <div id="course_code_wrapper" class="control-group" style="display:block">
-    <%= course_form.label :course_code, :en => "Short Name", :class => "control-label" %>
-    <div class="controls">
-      <%= course_form.text_field :course_code,
-		       :readonly => true,
-                       :class => 'input-large',
-                       :maxlength => '100' %>
-      <div><%= t :course_cose_explanation, "This will be displayed in places with little space" %></div>
-    </div>
-  </div>
-
-  <input type="hidden" name="enroll_me" value="true">
-
-
+   </div>
 
 <hr>
   <div class="button-container">
