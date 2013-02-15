@@ -3,25 +3,10 @@ SFU
 
 SFU Custom functionality for Canvas
 
-New Course Request Form
+New Course Request Form - http://<canvas_server>/sfu/course_form
 
-Requires the somce modifications to the Canvas models:
-
-	Course -
-		Add the following to the end of course.rb
-		class Course
-		  attr_accessible :course_sections_attributes
-		  accepts_nested_attributes_for :course_sections, :reject_if => proc { |a| a['name'].blank? }
-		end
-
-	CourseSection
-		Replacing the following code within course_section.rb
-	
-			'attr_protected :sis_source_id, :sis_batch_id, :course_id, :root_account_id, :enrollment_term_id'
-
-		with
-
-			'attr_accessible :sis_source_id, :name, :sis_batch_id, :course_id, :root_account_id, :enrollment_term_id'
-
+REST URLs available:
+http://<canvas_server>/sfu/courses/<sfuid>/[term_code]
+http://<canvas_server>/sfu/terms/<sfuid>
 
 Copyright (c) 2013 SFU / Ron Santos
