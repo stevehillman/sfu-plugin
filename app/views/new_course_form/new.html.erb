@@ -1,5 +1,5 @@
 <div class="new_course_container">
-  <% unless @controller.student_only? @sfuid %>
+  <% unless SFU::User.student_only? @sfuid %>
       <%= render :partial => 'form' %>
   <% else  %>
       <%= render :partial => 'error' %>

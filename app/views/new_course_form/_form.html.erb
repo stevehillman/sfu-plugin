@@ -4,25 +4,105 @@
     <%= label_tag "Courses For", "Courses For", :class => "control-label" %>
     <div class="controls">
       <%= text_field_tag "course_for", nil, :class => "input-large", :value => @sfuid, :onkeyup => "update_course_params();", :required => true %>
+      <button type="button" id="update_course_list" class="btn">Update</button>
     </div>
   </div>
 
    <div class="control-group">
      <%= label_tag "Courses you are teaching", "Course List", :class => "control-label" %>
-      <div class="controls">
-        <%
-           @course_list.each do |course_info|
-            course_data = course_info.split(":::")
-        %>
-           <%=  check_box_tag "course", course_data[0]  %> <%= course_data[1] %><br>
-        <% end %>
+      <div class="controls" id="course_list">Retrieving course list...
       </div>
    </div>
 
+    <div class="control-group">
+      <%= label_tag "Cross-list", "Cross-List Courses", :class => "control-label" %>
+      <div class="controls">
+        <%=  check_box_tag "cross_list", true  %>
+        <div>(This will place all the selected courses into a single course container)</div>
+      </div>
+    </div>
 <hr>
   <div class="button-container">
-    <%= submit_tag "Create Course", :class=> "btn btn-primary" %>
+    <%= submit_tag "Create Courses", :class=> "btn btn-primary" %>
   </div>
 <% end %>
 
+<%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" %>
 
+<%= javascript_include_tag "vendor/sfu/new_course_form.js" %>
+
+
+<script>
+    var spring_courses = [];
+    var summer_courses = [];
+    var fall_courses = [];
+
+
+
+    $(document).ready(function () {
+       update_course_list();
+    });
+    $("#update_course_list").click(function() {
+        update_course_list();
+    });
+
+    function update_course_list() {
+        spring_courses = [];
+        summer_courses = [];
+        fall_courses = [];
+
+        $("#course_list").html("Retrieving course list...");
+        var sfuid = $("#course_for").val();
+
+        $.getJSON("/sfu/courses/" + sfuid, function(data) {
+            var num = 1;
+
+            $.each(data, function (index, course) {
+                var course_display = course.name + course.number + " - " + course.section + " " + course.title;
+                var course_value = course.semester + "-" + course.key;
+                var checkbox_html = "<p><input type=\"checkbox\" name=\"selected_course_"+ num +"\" value=\"" + course_value + "\"> " + course_display + "</p>";
+                push_course_to_array(checkbox_html, course.semester);
+                num++;
+            });
+            $("#course_list").html("");
+            // Loop through each term_courses array and display
+            display_course(spring_courses);
+            display_course(summer_courses);
+            display_course(fall_courses);
+
+        });
+    }
+
+    function display_course(arr) {
+        // Loop through each term_courses array and display
+        for (var i =0; i < arr.length; i++) {
+            if (i == 0) {
+                // first element in array is the header
+                $("#course_list").append("<h4>" + arr[i] + "</h4>");
+            } else {
+                $("#course_list").append("<p>" + arr[i] + "</p>");
+            }
+        }
+    }
+
+    function format_term(term_code) {
+        var term = ["", "Spring", "Summer", "Fall"];
+        var year = term_code.toString().substring(0,4);
+        var term_index = term_code.toString().substring(4);
+        return year + " " + term[term_index];
+    }
+
+    function push_course_to_array(course_checkbox_html, semester) {
+        var term_num = semester.toString().substring(4);
+        if (term_num == 1) {
+            if (spring_courses.length == 0) spring_courses.push(format_term(semester))
+            spring_courses.push(course_checkbox_html);
+        } else if (term_num == 2) {
+            if (summer_courses.length == 0) rsummer_courses.push(format_term(semester))
+            summer_courses.push(course_checkbox_html);
+        } else if (term_num == 3) {
+            if (fall_courses.length) fall_courses.push(format_term(semester))
+            fall_courses.push(course_checkbox_html);
+        }
+    }
+</script>

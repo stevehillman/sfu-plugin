@@ -8,8 +8,56 @@ class NewCourseFormController < ApplicationController
     @user = User.find(@current_user.id)
     @sfuid = @user.pseudonym.unique_id
     @sfuid = "wcs"
-    @course_list = get_courses_for_instructor @sfuid
+    #@course_list = get_courses_for_instructor @sfuid
+    @course_list = Array.new
     @terms = Account.find_by_name('Simon Fraser University').enrollment_terms.delete_if {|t| t.name == 'Default Term'}
+  end
+
+  def courses
+    course_array = []
+
+    if params[:term].nil?
+      courses = SFU::Course.for_instructor params[:sfuid]
+    else
+      courses = SFU::Course.for_instructor params[:sfuid], params[:term]
+    end
+
+    courses.compact.each do |course|
+      course.compact.each do |c|
+        course_hash = {}
+        unless c["instructor"].nil?
+          course_hash["name"] = c["course"].first["name"]
+          course_hash["title"] = c["course"].first["title"]
+          course_hash["number"] = c["course"].first["number"]
+          course_hash["section"] = c["course"].first["section"]
+          course_hash["key"] = c["course"].first["key"]
+          course_hash["semester"] = c["course"].first["semester"]
+          course_hash["instructor"] = c["instructor"].first["username"]
+          course_hash["roleCode"] = c["instructor"].first["roleCode"]
+          course_array.push course_hash
+        end
+      end
+    end
+
+
+
+    respond_to do |format|
+      format.json { render :text => course_array.reverse.to_json }
+      #format.json { render :text => courses.to_json }
+    end
+
+  end
+
+  def terms
+    terms = SFU::Course.terms params[:sfuid]
+    term_array = []
+    terms.each do |term|
+      term_array.push term
+    end
+
+    respond_to do |format|
+      format.json { render :text => term_array.reverse.to_json }
+    end
   end
 
   def create
@@ -17,63 +65,8 @@ class NewCourseFormController < ApplicationController
   end
 
 
-  def rest_server
-    "https://rest.its.sfu.ca/cgi-bin/WebObjects/AOBRestServer.woa"
-  end
-
-  def account_url
-    rest_server + "/rest/datastore2/global/accountInfo.js"
-  end
-
-  def terms_url
-    rest_server + "/rest/crr/terms.js"
-  end
-
-  def courses_url
-    rest_server + "/rest/crr/resource2.js"
-  end
-
-  def auth_token
-    token = File.read File.dirname(__FILE__) + "/auth_token"
-    token.strip
-  end
-
-  # returns an array
-  def get_user_roles_from_amaint (sfuid)
-    account = get_json_data account_url, "&username=" + sfuid
-    unless account.nil?
-      account["roles"]
-    end
-  end
-
-  # returns true or false
-  def student_only? (sfuid)
-    result = get_user_roles_from_amaint(sfuid)
-    unless result.nil?
-	    if result.join("").eql? "undergrad"
-      		return true
-	    end
-    end
-    false
-  end
 
 
-  # returns an array
-  def get_terms_for_instructor (sfuid)
-    terms = get_json_data terms_url, "&username=" + sfuid
-    unless terms.nil?
-      terms["teachingSemester"]
-    end
-  end
-
-
-  # returns an array
-  def get_courses_for_term (sfuid, term)
-    courses = get_json_data courses_url, "&username=" + sfuid + "&term=" + term
-    unless courses.nil?
-      courses["teachingCourse"]
-    end
-  end
 
   # returns an array
   def get_courses_for_instructor (sfuid)
@@ -91,7 +84,7 @@ class NewCourseFormController < ApplicationController
           number = course["course"].first["number"]
           section = course["course"].first["section"]
           id = "#{term_code}-#{name.downcase}-#{number}-#{section}"
-          course_string = "#{id}:::" + get_term_display(term_code) + " #{name}#{number}-#{section} #{title}"
+          course_string =  "#{id}:::#{name}#{number} - " + get_term_display(term_code) + " #{section} #{title}"
           instructor = course["instructor"]
           username = instructor.first["username"]
           role_code = instructor.first["roleCode"]
@@ -121,16 +114,88 @@ class NewCourseFormController < ApplicationController
     display
   end
 
-  def get_json_data (url, params)
-    rest_url =  url + "?art=" + auth_token + params
-    json_out = RestClient.get rest_url
-    if json_out.length > 2
-      JSON.parse json_out
+end
+
+
+module SFU
+
+  class Course
+    class << self
+      def terms(sfuid)
+        terms = SFURest.json SFURest.terms_url, "&username=" + sfuid
+        terms["teachingSemester"]
+      end
+
+      def for_instructor(sfuid, term_code = nil)
+        terms(sfuid).map do |term|
+          if term_code.nil?
+            courses = SFURest.json SFURest.courses_url, "&username=" + sfuid + "&term=" + term["peopleSoftCode"]
+            courses["teachingCourse"]
+          else
+            if term["peopleSoftCode"] == term_code
+              courses = SFURest.json SFURest.courses_url, "&username=" + sfuid + "&term=" + term["peopleSoftCode"]
+              courses["teachingCourse"]
+            end
+          end
+        end
+      end
+
     end
   end
 
+  class User
+    class << self
+      def roles(sfuid)
+        account = SFURest.json SFURest.account_url, "&username=" + sfuid
+        account["roles"]
+      end
 
+      # returns true or false
+      def student_only?(sfuid)
+        result = roles sfuid
+        if result.join("").eql? "undergrad"
+          return true
+        end
+        false
+      end
 
+    end
+  end
 
 end
 
+module SFURest
+  extend self
+
+  def rest_server
+    "https://rest.its.sfu.ca/cgi-bin/WebObjects/AOBRestServer.woa"
+  end
+
+  def account_url
+    rest_server + "/rest/datastore2/global/accountInfo.js"
+  end
+
+  def terms_url
+    rest_server + "/rest/crr/terms.js"
+  end
+
+  def courses_url
+    rest_server + "/rest/crr/resource2.js"
+  end
+
+
+  def json(url, params)
+    rest_url =  url + "?art=" + auth_token + params
+    begin
+      json_out = RestClient.get rest_url
+      JSON.parse json_out
+    rescue Exception=>e
+      "[ teachingSemester => {}, teachingCourse => {} ]"
+    end
+  end
+
+  def auth_token
+    token = File.read File.dirname(__FILE__) + "/auth_token"
+    token.strip
+  end
+end
