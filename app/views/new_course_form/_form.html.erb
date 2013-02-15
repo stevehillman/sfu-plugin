@@ -29,13 +29,10 @@
 
 <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" %>
 
-<%= javascript_include_tag "vendor/sfu/new_course_form.js" %>
-
-
 <script>
-    var spring_courses = [];
-    var summer_courses = [];
-    var fall_courses = [];
+//    var spring_courses = [];
+//    var summer_courses = [];
+//    var fall_courses = [];
 
 
 
@@ -47,43 +44,45 @@
     });
 
     function update_course_list() {
-        spring_courses = [];
-        summer_courses = [];
-        fall_courses = [];
+//        spring_courses = [];
+//        summer_courses = [];
+//        fall_courses = [];
 
         $("#course_list").html("Retrieving course list...");
         var sfuid = $("#course_for").val();
 
         $.getJSON("/sfu/courses/" + sfuid, function(data) {
             var num = 1;
+            $("#course_list").html("");
 
             $.each(data, function (index, course) {
-                var course_display = course.name + course.number + " - " + course.section + " " + course.title;
-                var course_value = course.semester + "-" + course.key;
+                var course_display = format_term(course.semester) + " - " + course.name + course.number + " - " + course.section + " " + course.title;
+                var course_value = course.key;
                 var checkbox_html = "<p><input type=\"checkbox\" name=\"selected_course_"+ num +"\" value=\"" + course_value + "\"> " + course_display + "</p>";
-                push_course_to_array(checkbox_html, course.semester);
+                $("#course_list").append(checkbox_html);
+                //push_course_to_array(checkbox_html, course.semester);
                 num++;
             });
-            $("#course_list").html("");
+
             // Loop through each term_courses array and display
-            display_course(spring_courses);
-            display_course(summer_courses);
-            display_course(fall_courses);
+//            display_course(spring_courses);
+//            display_course(summer_courses);
+//            display_course(fall_courses);
 
         });
     }
 
-    function display_course(arr) {
-        // Loop through each term_courses array and display
-        for (var i =0; i < arr.length; i++) {
-            if (i == 0) {
-                // first element in array is the header
-                $("#course_list").append("<h4>" + arr[i] + "</h4>");
-            } else {
-                $("#course_list").append("<p>" + arr[i] + "</p>");
-            }
-        }
-    }
+//    function display_course(arr) {
+//        // Loop through each term_courses array and display
+//        for (var i =0; i < arr.length; i++) {
+//            if (i == 0) {
+//                // first element in array is the header
+//                $("#course_list").append("<h4>" + arr[i] + "</h4>");
+//            } else {
+//                $("#course_list").append("<p>" + arr[i] + "</p>");
+//            }
+//        }
+//    }
 
     function format_term(term_code) {
         var term = ["", "Spring", "Summer", "Fall"];
@@ -92,17 +91,17 @@
         return year + " " + term[term_index];
     }
 
-    function push_course_to_array(course_checkbox_html, semester) {
-        var term_num = semester.toString().substring(4);
-        if (term_num == 1) {
-            if (spring_courses.length == 0) spring_courses.push(format_term(semester))
-            spring_courses.push(course_checkbox_html);
-        } else if (term_num == 2) {
-            if (summer_courses.length == 0) rsummer_courses.push(format_term(semester))
-            summer_courses.push(course_checkbox_html);
-        } else if (term_num == 3) {
-            if (fall_courses.length) fall_courses.push(format_term(semester))
-            fall_courses.push(course_checkbox_html);
-        }
-    }
+//    function push_course_to_array(course_checkbox_html, semester) {
+//        var term_num = semester.toString().substring(4);
+//        if (term_num == 1) {
+//            if (spring_courses.length == 0) spring_courses.push(format_term(semester))
+//            spring_courses.push(course_checkbox_html);
+//        } else if (term_num == 2) {
+//            if (summer_courses.length == 0) rsummer_courses.push(format_term(semester))
+//            summer_courses.push(course_checkbox_html);
+//        } else if (term_num == 3) {
+//            if (fall_courses.length) fall_courses.push(format_term(semester))
+//            fall_courses.push(course_checkbox_html);
+//        }
+//    }
 </script>

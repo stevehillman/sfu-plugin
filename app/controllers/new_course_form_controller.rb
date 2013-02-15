@@ -30,10 +30,14 @@ class NewCourseFormController < ApplicationController
           course_hash["title"] = c["course"].first["title"]
           course_hash["number"] = c["course"].first["number"]
           course_hash["section"] = c["course"].first["section"]
-          course_hash["key"] = c["course"].first["key"]
-          course_hash["semester"] = c["course"].first["semester"]
+          course_hash["semester"] = c["course"].first["semester"].to_s
           course_hash["instructor"] = c["instructor"].first["username"]
           course_hash["roleCode"] = c["instructor"].first["roleCode"]
+          course_hash["key"] = course_hash["semester"] + ":::" +
+                              course_hash["name"].downcase +  ":::" +
+                              course_hash["number"] + ":::" +
+                              course_hash["section"].downcase + ":::" + course_hash["title"]
+
           course_array.push course_hash
         end
       end
@@ -60,7 +64,45 @@ class NewCourseFormController < ApplicationController
     end
   end
 
+  # course.csv
+  # course_id,short_name,long_name,account_id,term_id,status
+  # section.csv
+  # section_id,course_id,name,status,start_date,end_date
+  # enrollment.csv
+  # course_id,user_id,role,section_id,status
   def create
+    selected_courses = []
+    account_id = Account.find_by_name('Simon Fraser University').id
+    username = params[:course_for]
+    cross_list = params[:cross_list]
+    params.each do |key, value|
+      if key.to_s.starts_with? "selected_course"
+        selected_courses.push value
+      end
+    end
+
+    @course_csv = []
+    @section_csv = []
+    @enrollment_csv = []
+    selected_courses.each do |course|
+      # 20131:::ensc:::351:::d100:::Real Time and Embedded Systems
+      course_info = course.split(":::")
+      term = course_info[0]
+      name = course_info[1]
+      number = course_info[2]
+      section = course_info[3]
+      title = course_info[4]
+
+      course_id = "#{term}-#{name}-#{number}-#{section}:::course"
+      section_id = "#{term}-#{name}-#{number}-#{section}:::section"
+      short_name = "#{name.upcase}#{number} #{section.upcase}"
+      long_name =  "#{short_name} #{title}"
+
+      @course_csv.push "#{course_id},#{short_name},#{long_name},#{account_id},active"
+      @section_csv.push "#{section_id},#{course_id},#{section.upcase},active,,,"
+      @enrollment_csv.push "#{course_id},#{username},teacher,#{section_id},active"
+
+    end
 
   end
 
